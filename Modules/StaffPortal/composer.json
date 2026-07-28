@@ -1,0 +1,30 @@
+{
+    "name": "nwidart/staffportal",
+    "description": "",
+    "authors": [
+        {
+            "name": "Nicolas Widart",
+            "email": "n.widart@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\StaffPortal\\": "app/",
+            "Modules\\StaffPortal\\Database\\Factories\\": "database/factories/",
+            "Modules\\StaffPortal\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\StaffPortal\\Tests\\": "tests/"
+        }
+    }
+}

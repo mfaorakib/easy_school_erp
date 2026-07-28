@@ -1,0 +1,11 @@
+{
+    "name": "OnlineExam",
+    "alias": "onlineexam",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\OnlineExam\\Providers\\OnlineExamServiceProvider"
+    ],
+    "files": []
+}

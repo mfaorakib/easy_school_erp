@@ -1,0 +1,11 @@
+{
+    "name": "AcademicCore",
+    "alias": "academiccore",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\AcademicCore\\Providers\\AcademicCoreServiceProvider"
+    ],
+    "files": []
+}

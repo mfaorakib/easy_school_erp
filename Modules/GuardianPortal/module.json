@@ -1,0 +1,11 @@
+{
+    "name": "GuardianPortal",
+    "alias": "guardianportal",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\GuardianPortal\\Providers\\GuardianPortalServiceProvider"
+    ],
+    "files": []
+}

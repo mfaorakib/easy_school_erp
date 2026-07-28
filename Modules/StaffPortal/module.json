@@ -1,0 +1,11 @@
+{
+    "name": "StaffPortal",
+    "alias": "staffportal",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\StaffPortal\\Providers\\StaffPortalServiceProvider"
+    ],
+    "files": []
+}

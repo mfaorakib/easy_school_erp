@@ -1,0 +1,30 @@
+{
+    "name": "nwidart/downloadcenter",
+    "description": "",
+    "authors": [
+        {
+            "name": "Nicolas Widart",
+            "email": "n.widart@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\DownloadCenter\\": "app/",
+            "Modules\\DownloadCenter\\Database\\Factories\\": "database/factories/",
+            "Modules\\DownloadCenter\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\DownloadCenter\\Tests\\": "tests/"
+        }
+    }
+}

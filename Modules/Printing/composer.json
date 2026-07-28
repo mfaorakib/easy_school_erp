@@ -1,0 +1,30 @@
+{
+    "name": "nwidart/printing",
+    "description": "",
+    "authors": [
+        {
+            "name": "Nicolas Widart",
+            "email": "n.widart@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Printing\\": "app/",
+            "Modules\\Printing\\Database\\Factories\\": "database/factories/",
+            "Modules\\Printing\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\Printing\\Tests\\": "tests/"
+        }
+    }
+}

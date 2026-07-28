@@ -1,0 +1,28 @@
+/*
+ * Tailwind v4 — loaded ADDITIVELY on top of this app's existing hand-written
+ * CSS design system (the .card/.btn/.grid/... classes defined inline in each
+ * layout's <style> block). Two deliberate choices:
+ *
+ *  1. NO preflight. Tailwind's base reset is intentionally omitted so it can
+ *     never clobber the current look — only the utility classes are pulled in.
+ *  2. Utilities are imported UNLAYERED (theme stays in its own layer). Because
+ *     this compiled bundle is loaded AFTER each layout's inline <style>, an
+ *     intentionally-added utility (e.g. `md:hidden`, `overflow-x-auto`,
+ *     `flex-wrap`) reliably wins over a design-system class on the same element
+ *     via normal same-specificity source order. This is what lets us layer a
+ *     mobile-responsive pass on top without rewriting the design system.
+ */
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css';
+
+/* Scan the root resources views, EVERY module's blade files, and the compiled
+ * view cache — otherwise responsive utilities used in module views would be
+ * tree-shaken out of the build. */
+@source '../**/*.blade.php';
+@source '../../Modules/**/*.blade.php';
+@source '../../storage/framework/views/*.php';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+}

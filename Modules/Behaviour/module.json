@@ -1,0 +1,11 @@
+{
+    "name": "Behaviour",
+    "alias": "behaviour",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Behaviour\\Providers\\BehaviourServiceProvider"
+    ],
+    "files": []
+}

@@ -1,0 +1,11 @@
+{
+    "name": "Homework",
+    "alias": "homework",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Homework\\Providers\\HomeworkServiceProvider"
+    ],
+    "files": []
+}
