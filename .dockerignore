@@ -1,0 +1,62 @@
+# Version control
+.git
+.gitattributes
+.github
+
+# Dependencies (installed fresh inside the image, not copied from host)
+/vendor
+/node_modules
+
+# Compiled front-end assets (rebuilt fresh by the Dockerfile's "frontend"
+# stage; keeping stale local output out of the build context speeds builds)
+/public/build
+/public/hot
+/public/storage
+
+# Env files - Render supplies real values as container env vars, never via
+# a committed .env file baked into the image.
+.env
+.env.*
+!.env.example
+
+# Local runtime state that must never be baked into the image
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+storage/*.key
+storage/pail
+
+# Compiled bootstrap caches (config/routes/services/package-discovery).
+# These are per-environment generated artifacts (see bootstrap/cache/.gitignore
+# - everything in there except .gitignore itself is untracked). Shipping a
+# stale copy from the host's local dev environment would bake in dev-only
+# service providers (e.g. laravel/pail, a require-dev package this image's
+# `composer install --no-dev` does not install) - and since Laravel only
+# regenerates these caches when the file is *missing* (not when it's present
+# but stale), a stale bootstrap/cache/packages.php baked into the image would
+# never get corrected on its own. docker/entrypoint.sh regenerates all of
+# these fresh at container boot (package:discover, config:cache, route:cache,
+# view:cache).
+bootstrap/cache/*
+
+# Tests / docs / editor cruft not needed at runtime
+/tests
+/docs
+*.md
+!README.md
+.editorconfig
+.phpunit.result.cache
+.phpunit.cache
+/.vscode
+/.idea
+/.fleet
+/.nova
+/.zed
+
+# Misc
+Homestead.json
+Homestead.yaml
+Thumbs.db
+.DS_Store
+*.log

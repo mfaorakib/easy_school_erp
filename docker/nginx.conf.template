@@ -1,0 +1,68 @@
+# Templated nginx server block for the easyschool-erp app.
+#
+# Render.com injects $PORT at container *runtime* (it varies per deploy),
+# so this file is NOT nginx config as-is - docker/entrypoint.sh renders it
+# with `envsubst '${PORT}'` into /etc/nginx/conf.d/default.conf before
+# nginx starts. Only ${PORT} is substituted; every other "$..." token below
+# (nginx's own variables, e.g. $uri, $query_string) is left untouched
+# because envsubst is called with an explicit whitelist of just ${PORT}.
+
+server {
+    listen ${PORT} default_server;
+    server_name _;
+
+    root /var/www/html/public;
+    index index.php index.html;
+
+    charset utf-8;
+
+    client_max_body_size 20M;
+
+    access_log /dev/stdout;
+    error_log  /dev/stderr;
+
+    gzip on;
+    gzip_vary on;
+    gzip_comp_level 5;
+    gzip_min_length 256;
+    gzip_proxied any;
+    gzip_types
+        text/plain
+        text/css
+        text/xml
+        text/javascript
+        application/json
+        application/javascript
+        application/xml
+        application/xml+rss
+        application/x-font-ttf
+        font/opentype
+        image/svg+xml;
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+    location = /robots.txt  { access_log off; log_not_found off; }
+
+    # Laravel's built-in health check (bootstrap/app.php -> health: '/up')
+    # is an ordinary application route, so it needs no special handling
+    # here - it flows through the same try_files/PHP-FPM path as everything
+    # else below.
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ \.php$ {
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        fastcgi_pass 127.0.0.1:9000;
+        fastcgi_index index.php;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param PATH_INFO $fastcgi_path_info;
+        fastcgi_read_timeout 300;
+    }
+
+    # Deny access to dotfiles (.env, .git, etc.) if ever present under
+    # the document root.
+    location ~ /\.(?!well-known).* {
+        deny all;
+    }
+}

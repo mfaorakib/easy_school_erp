@@ -1,0 +1,83 @@
+# render.yaml — Render Blueprint for the EasySchool ERP (Laravel 12 / PHP 8.2)
+#
+# What this does:
+#   Defines a single Docker-based web service that Render builds from the
+#   Dockerfile at the repo root and runs on the free plan. Import this file
+#   via Render's "New +" -> "Blueprint" flow after connecting this GitHub repo.
+#
+# Action needed after import:
+#   Any env var below marked with `sync: false` has NO value stored in this
+#   file. Render will prompt you to fill each one in from the dashboard
+#   during/after the Blueprint import (Environment tab of the service).
+#   This includes the app key, the database credentials, and the final
+#   public URL of the service.
+#
+# Known limitation:
+#   FILESYSTEM_DISK=local writes to the container's local disk, which is
+#   ephemeral on Render's free tier — uploaded files will NOT persist across
+#   deploys or restarts. That is expected for this setup, not a bug to fix here.
+
+services:
+  - type: web
+    name: easyschool-erp
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /up
+    envVars:
+      # --- Application ---
+      - key: APP_NAME
+        value: Laravel
+      - key: APP_ENV
+        value: production
+      - key: APP_KEY
+        sync: false # paste output of: php artisan key:generate --show
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_URL
+        sync: false # fill in with your assigned https://<service-name>.onrender.com URL after first deploy
+      - key: APP_LOCALE
+        value: en
+      - key: APP_FALLBACK_LOCALE
+        value: en
+      - key: APP_FAKER_LOCALE
+        value: en_US
+
+      # --- Logging (stderr so Render's log viewer captures it) ---
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: LOG_LEVEL
+        value: error
+
+      # --- Database (external free MySQL, e.g. db4free.net) ---
+      - key: DB_CONNECTION
+        value: mysql
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        value: "3306"
+      - key: DB_DATABASE
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+
+      # --- Session / Cache / Queue ---
+      - key: SESSION_DRIVER
+        value: database
+      - key: SESSION_ENCRYPT
+        value: "false"
+      - key: CACHE_STORE
+        value: database
+      - key: QUEUE_CONNECTION
+        value: database
+
+      # --- Filesystem (ephemeral on free tier, see note above) ---
+      - key: FILESYSTEM_DISK
+        value: local
+
+      # --- Mail ---
+      - key: MAIL_MAILER
+        value: log
