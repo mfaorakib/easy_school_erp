@@ -55,12 +55,16 @@ php artisan package:discover --ansi
 # against the external MySQL database Render provides via DB_* env vars.
 php artisan migrate --force
 
-# Ensure a working super-admin login always exists. Only this one seeder
+# Ensure a working super-admin login always exists. Only this seeder chain
 # (not the full DatabaseSeeder, which also loads ~25 demo-data seeders of
-# unverified idempotency) runs on every boot: AdminUserSeeder itself uses
-# User::updateOrCreate(), so re-running it on every restart just updates
-# the same admin@easyschool.test row in place instead of duplicating it.
-php artisan db:seed --class="Modules\\Access\\Database\\Seeders\\AdminUserSeeder" --force
+# unverified idempotency) runs on every boot. AdminUserSeeder alone isn't
+# enough - it assigns the 'super-admin' Spatie role, which only exists
+# once RoleSeeder has run, so all 3 steps AccessDatabaseSeeder chains
+# together are needed: RoleSeeder::updateOrCreate(), AdminUserSeeder's
+# User::updateOrCreate(), and PermissionSeeder's firstOrCreate() +
+# syncPermissions() (a full replace, not additive) - every one idempotent,
+# safe to repeat on every container restart.
+php artisan db:seed --class="Modules\\Access\\Database\\Seeders\\AccessDatabaseSeeder" --force
 
 # Render's free tier disk is ephemeral, so this symlink is gone on every
 # fresh container start/restart; guard against it already existing so a
