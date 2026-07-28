@@ -82,35 +82,41 @@ git push -u origin main
 
 ---
 
-## ধাপ ৩: db4free.net-এ ফ্রি MySQL ডাটাবেস বানানো
+## ধাপ ৩: Aiven-এ ফ্রি MySQL ডাটাবেস বানানো
 
-Render-এর free plan-এ built-in ডাটাবেস নেই, তাই একটি external free MySQL ব্যবহার করা হচ্ছে — **db4free.net**, কারণ এটি ব্যবহার করতে কোনো credit card লাগে না।
+(এই প্রজেক্টে আগে db4free.net সাজেস্ট করা হয়েছিল, কিন্তু সেটা সাইটের সমস্যার কারণে ব্যবহার করা যায়নি — তাই এখন **Aiven**-এর "Always Free" MySQL প্ল্যান ব্যবহার করা হচ্ছে, যেটা কোনো credit card ছাড়াই পাওয়া যায় এবং db4free.net-এর চেয়ে অনেক বেশি নির্ভরযোগ্য।)
 
-> **মনে রাখবেন:** db4free.net শুধুমাত্র টেস্টিং/ডেমো-এর জন্য উপযুক্ত। এর storage quota খুবই ছোট (প্রায় ২০০MB) এবং uptime-এর কোনো নিশ্চয়তা (SLA) নেই। আসল স্কুলের ছাত্র/অভিভাবকের ডেটা দীর্ঘমেয়াদে এখানে রাখা উচিত নয়।
+> **Aiven free MySQL সম্পর্কে:** 1GB storage, 1GB RAM, স্থায়ী (৩০ দিনের trial না) — তবে অনেকদিন ব্যবহার না করলে service নিজে থেকে বন্ধ (power off) হয়ে যায় (আগে থেকে ইমেইলে জানিয়ে দেয়)। আমাদের অ্যাপের queue worker/scheduler প্রতি মিনিটে ডাটাবেসে query করে বলে সাধারণত এই inactivity power-off হওয়ার কথা না।
 
-> **গুরুত্বপূর্ণ — MySQL 8.0 আবশ্যক:** এই প্রজেক্টের একটি migration (`Modules/Attendance`) একটি MySQL 8.0.13+ "functional index" ব্যবহার করে (`COALESCE(subject_id, 0)` দিয়ে তৈরি), যা MySQL 5.7-এ কাজ করে না। খুশির খবর হলো db4free.net এখন ডিফল্টভাবে **MySQL 8.0** সার্ভারেই নতুন account তৈরি করে (5.7 বন্ধ/deprecated হয়ে গেছে) — তাই সাধারণ সাইনআপেই এটি এমনিতেই ঠিক থাকবে। শুধু সাইনআপের সময় ভুলেও কোনো পুরনো "MySQL 5.7" instance/লিংক বেছে নেবেন না; যদি db4free ছাড়া অন্য কোনো free MySQL provider ব্যবহার করেন, সেখানে MySQL ভার্সন কমপক্ষে 8.0.13+ কিনা যাচাই করে নেবেন — নাহলে `php artisan migrate --force` ধাপে deploy fail করবে।
+> **MySQL ভার্সন নিয়ে চিন্তা নেই:** এই প্রজেক্টের একটি migration MySQL 8.0.13+ প্রয়োজন করে (একটা functional index-এর জন্য) — Aiven সবসময় আধুনিক MySQL 8.x চালায়, তাই এটা এমনিতেই ঠিক থাকবে।
 
-1. [https://www.db4free.net](https://www.db4free.net) এ যান।
-2. **Sign up** পেজে যান এবং পূরণ করুন:
-   - Database name (নিজের পছন্দমতো একটি নাম দিন, যেমন `easyschool_db`)
-   - Username
-   - Password
-   - Email
-3. এই তিনটি মান (database name, username, password) হুবহু (case-sensitive) মনে রাখুন বা লিখে রাখুন — ধাপ ৪-এ লাগবে।
-4. Sign up করার পর সাধারণত একটি **ইমেইল confirmation** পাঠানো হয় — ইমেইলে গিয়ে confirmation লিংকে ক্লিক করুন।
-5. Confirmation করার পরেও ডাটাবেসটি সম্পূর্ণভাবে চালু (active) হতে কিছু সময় (কয়েক মিনিট) লাগতে পারে — সাথে সাথে কাজ না করলে একটু অপেক্ষা করুন।
+1. [https://aiven.io](https://aiven.io) এ যান → **Get started free** / **Sign up** — ইমেইল বা GitHub দিয়ে সাইন আপ করা যায়, কোনো card লাগে না।
+2. Console-এ ঢোকার পর **"Create service"** ক্লিক করুন।
+3. Service টাইপ হিসেবে **MySQL** বেছে নিন।
+4. Cloud provider/region যেকোনো একটা রাখুন (default রাখলেই চলবে)।
+5. Plan-এ **Free** টিয়ার নির্বাচন করুন।
+6. Service-এর একটা নাম দিন (যেমন `easyschool-db`), তারপর **Create service** ক্লিক করুন।
+7. কয়েক মিনিট অপেক্ষা করুন — service-এর status **"Running"** না হওয়া পর্যন্ত।
+8. Service খুলে **"Overview"** ট্যাবে গেলে একটা **"Connection information"** প্যানেল দেখবেন, যেখানে থাকবে:
+   - **Host**
+   - **Port** (এলোমেলো একটা নম্বর হবে, `3306` না — হুবহু কপি করুন)
+   - **User** (সাধারণত `avnadmin`)
+   - **Password** (চোখ আইকনে ক্লিক করে দেখুন, কপি করুন)
+   - **Database name** (সাধারণত `defaultdb`)
+9. একই পেজে **"CA certificate"** ডাউনলোড করার একটা অপশন/লিংক থাকবে (কখনো কখনো "Download" বাটন, কখনো টেক্সট আকারে দেখানো থাকে) — সেটা খুলে পুরো কনটেন্ট (`-----BEGIN CERTIFICATE-----` থেকে `-----END CERTIFICATE-----` পর্যন্ত সবটুকু) কপি করে রাখুন।
 
-এই তথ্যগুলো সরাসরি Render-এর environment variable-এর সাথে মিলে যাবে:
+এই তথ্যগুলো Render-এর environment variable-এর সাথে মিলে যাবে:
 
-| db4free.net তথ্য | Render Environment Variable |
+| Aiven তথ্য | Render Environment Variable |
 |---|---|
-| Hostname (সাধারণত `db4free.net`) | `DB_HOST` |
-| Port `3306` | `DB_PORT` |
-| আপনার দেওয়া database name | `DB_DATABASE` |
-| আপনার দেওয়া username | `DB_USERNAME` |
-| আপনার দেওয়া password | `DB_PASSWORD` |
+| Host | `DB_HOST` |
+| Port (এলোমেলো নম্বর) | `DB_PORT` |
+| Database name (`defaultdb`) | `DB_DATABASE` |
+| User (`avnadmin`) | `DB_USERNAME` |
+| Password | `DB_PASSWORD` |
+| CA certificate-এর পুরো কনটেন্ট | `DB_SSL_CA_CONTENT` |
 
-এই মানগুলোও ধাপ ১-এর APP_KEY-এর সাথে একই নোটে লিখে রাখুন।
+এই মানগুলো ধাপ ১-এর APP_KEY-এর সাথে একই নোটে লিখে রাখুন — ধাপ ৪-এ সবগুলো একসাথে বসাতে হবে।
 
 ---
 
@@ -125,7 +131,7 @@ Render-এর free plan-এ built-in ডাটাবেস নেই, তাই 
 7. এখন Render আপনাকে `sync: false` হিসেবে চিহ্নিত environment variable-গুলো পূরণ করতে বলবে। এগুলো হলো:
    - `APP_KEY` → ধাপ ১-এ কপি করা `base64:...` মানটি বসান।
    - `APP_URL` → এই মুহূর্তে খালি রাখুন বা যেকোনো placeholder দিন (যেমন `https://placeholder.onrender.com`), কারণ Render সার্ভিস তৈরি হওয়ার **পরেই** আসল URL দেবে। এটি একটু পরে ঠিক করতে হবে (নিচে দেখুন)।
-   - `DB_HOST`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` → ধাপ ৩-এ db4free.net থেকে পাওয়া মানগুলো বসান।
+   - `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`, `DB_SSL_CA_CONTENT` → ধাপ ৩-এ Aiven থেকে পাওয়া মানগুলো বসান (CA certificate-এর ক্ষেত্রে পুরো multi-line টেক্সটটাই paste করুন, কোনো অংশ বাদ না দিয়ে)।
    - যদি `.env.render.example` ফাইলে Stripe-সংক্রান্ত কোনো চাবি (যেমন `STRIPE_KEY`, `STRIPE_SECRET`) `sync: false` হিসেবে থাকে, সেগুলোও একইভাবে নিজের মান দিয়ে পূরণ করুন।
 8. সব পূরণ করে চূড়ান্ত **Create**/**Apply** বাটনে ক্লিক করুন। Render এখন কোড টেনে নিয়ে Docker image build করে deploy শুরু করবে — প্রথমবার build হতে (dependency install + build) সাধারণত ৫–১০ মিনিট বা তার বেশি সময় লাগতে পারে।
 9. Build শেষ হয়ে সার্ভিস তৈরি হলে, সার্ভিস পেজের উপরে Render একটি আসল URL দেখাবে, যেমন `https://easyschool-erp-xxxx.onrender.com`। এই URL-টি copy করুন।
@@ -188,7 +194,7 @@ Render-এর free web service ডিফল্টভাবে "always-on" থা
 
 এই সেটআপ ব্যবহারের আগে নিচের সীমাবদ্ধতাগুলো স্পষ্টভাবে জেনে রাখুন:
 
-- **db4free.net শুধু টেস্টিং/ডেমোর জন্য** — এর storage quota খুবই ছোট (প্রায় ২০০MB) এবং uptime-এর কোনো নিশ্চয়তা (SLA) দেওয়া নেই। যেকোনো সময় ডাটাবেস বন্ধ থাকতে পারে বা ডেটা হারাতে পারে।
+- **Aiven free MySQL ছোট workload-এর জন্য** — 1GB storage/RAM, high-availability নেই (single node), এবং অনেকদিন inactive থাকলে service নিজে থেকে বন্ধ হয়ে যেতে পারে (আগে ইমেইলে notice দেয়)। বড় স্কেলে real production-এর জন্য এটা যথেষ্ট না।
 - **আপলোড করা ফাইল (documents, ছবি ইত্যাদি) স্থায়ী নয়** — Render-এর free tier-এ কোনো persistent disk/volume নেই (ephemeral disk)। তাই প্রতিবার সার্ভিস restart বা redeploy হলে container-এ আপলোড করা সব ফাইল মুছে যাবে।
 - **Cold start হতে পারে** — UptimeRobot-এর ping কোনো কারণে miss হলে, বা Render maintenance-এর জন্য সার্ভিস বন্ধ থাকলে, প্রথম ভিজিটরকে ৩০–৫০ সেকেন্ড অপেক্ষা করতে হতে পারে।
 - **এই পুরো সেটআপ একটি সাময়িক/ডেমো deployment** — এটি প্রকৃত স্কুলের ছাত্র/অভিভাবকের ডেটা দীর্ঘমেয়াদে রাখার জন্য উপযুক্ত production সমাধান নয়। বাস্তব ব্যবহারের জন্য পরবর্তীতে paid database, persistent storage, এবং paid/always-on hosting প্ল্যানে migrate করা প্রয়োজন হবে।

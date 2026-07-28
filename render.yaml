@@ -50,18 +50,27 @@ services:
       - key: LOG_LEVEL
         value: error
 
-      # --- Database (external free MySQL, e.g. db4free.net) ---
+      # --- Database (external free MySQL, e.g. Aiven's free MySQL plan) ---
       - key: DB_CONNECTION
         value: mysql
       - key: DB_HOST
         sync: false
       - key: DB_PORT
-        value: "3306"
+        sync: false # Aiven assigns a non-default port per service - copy it exactly from the service overview page
       - key: DB_DATABASE
         sync: false
       - key: DB_USERNAME
         sync: false
       - key: DB_PASSWORD
+        sync: false
+      # Aiven (and similar managed providers) require an encrypted connection
+      # and want the server's CA cert verified. Paste the full contents of
+      # the CA certificate Aiven's console lets you download (a "ca.pem"
+      # PEM block) as this var's value. docker/entrypoint.sh writes it to a
+      # file at container start and points config/database.php's mysql
+      # 'options' (MYSQL_ATTR_SSL_CA) at it. Leave unset for a provider that
+      # doesn't need it (e.g. db4free.net) - it's a no-op when empty.
+      - key: DB_SSL_CA_CONTENT
         sync: false
 
       # --- Session / Cache / Queue ---

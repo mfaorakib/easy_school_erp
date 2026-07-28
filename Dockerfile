@@ -87,6 +87,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # server block that should claim the listening port.
     && rm -f /etc/nginx/sites-enabled/default
 
+# php-fpm's own pool config defaults to clearing the process environment
+# before running any PHP script (this is FPM's built-in default, separate
+# from the OS-level env every child process already inherits - the stock
+# www.conf only ships this setting commented out, so the default silently
+# applies). Without this line, Render's injected DB_*/APP_KEY/etc. vars
+# would stay invisible to every request served through nginx+php-fpm even
+# though docker/entrypoint.sh's direct `php artisan ...` CLI calls (which
+# bypass FPM entirely) would see them fine - migrations would succeed at
+# boot while the live site still couldn't reach the database.
+RUN echo "clear_env = no" >> /usr/local/etc/php-fpm.d/www.conf
+
 WORKDIR /var/www/html
 
 # --- Application source ------------------------------------------------

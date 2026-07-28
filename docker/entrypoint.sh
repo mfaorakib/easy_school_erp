@@ -18,6 +18,19 @@ cd /var/www/html
 # processes can still read and write them without a permission mismatch.
 umask 002
 
+# --- Optional MySQL SSL CA cert (needed by providers like Aiven that ------
+# require encrypted connections and want the server cert verified). If the
+# DB_SSL_CA_CONTENT env var holds the provider's CA cert PEM text, write it
+# to a file here and point config/database.php's mysql 'options' entry
+# (which already reads MYSQL_ATTR_SSL_CA, see config/database.php) at it.
+# Left unset, this is a no-op - providers that don't require it (e.g.
+# db4free.net) need nothing here.
+if [ -n "${DB_SSL_CA_CONTENT:-}" ]; then
+    mkdir -p storage/certs
+    printf '%s\n' "$DB_SSL_CA_CONTENT" > storage/certs/db-ca.pem
+    export MYSQL_ATTR_SSL_CA="/var/www/html/storage/certs/db-ca.pem"
+fi
+
 # --- Render injects $PORT at runtime; template nginx's server block ----
 # Only ${PORT} is substituted - passing an explicit variable list to
 # envsubst leaves every other "$..." token in the template (nginx's own
